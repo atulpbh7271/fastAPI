@@ -16,12 +16,12 @@ class Post(BaseModel):
 
 my_posts = [{"title":"title of posts 1","content":"content of posts 1","id" : 1},{"title":"favorite food","content":"i like pizza","id" : 2}]
 
-
+#show all posts
 @app.get("/posts")
 def get_posts():
     return {"data": my_posts}
 
-
+#create a post
 @app.post("/posts",status_code=status.HTTP_201_CREATED)
 def create_posts(post:Post):
     # dict() on a Pydantic model is deprecated in Pydantic v2
@@ -43,3 +43,18 @@ def get_pots(id:int):
         raise HTTPException(status_code=404, detail=f"Post with id {id} not found")
     return {"data": post}
 
+#delete a posts
+@app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(id: int):
+
+    # Find the index of the post with matching id
+    for i, p in enumerate(my_posts):
+        if p["id"] == id:
+            my_posts.pop(i)
+            return  # 204 No Content → nothing to return
+
+    # If we reach here → post not found
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Post with id {id} does not exist"
+    )
