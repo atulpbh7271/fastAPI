@@ -14,7 +14,26 @@ class Post(BaseModel):
     rating : Optional[int] = None
 
 
+# Output model (includes id)
+class PostOut(Post):
+    id: int
+
+# Model for partial updates (all fields optional)
+class PostUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    published: Optional[bool] = None
+    rating: Optional[int] = None
+
+
 my_posts = [{"title":"title of posts 1","content":"content of posts 1","id" : 1},{"title":"favorite food","content":"i like pizza","id" : 2}]
+
+
+def find_post_index(post_id: int):
+    for i, p in enumerate(my_posts):
+        if p["id"] == post_id:
+            return i
+    return None
 
 #show all posts
 @app.get("/posts")
@@ -58,3 +77,21 @@ def delete_post(id: int):
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Post with id {id} does not exist"
     )
+
+
+# --- PUT: full update/replace ---
+@app.put("/posts/{id}", response_model=PostOut)
+def update_post_put(id: int, post: Post):
+    """
+    PUT replaces the entire resource (except we keep the same id).
+    The client must send all required fields.
+    """
+    idx = find_post_index(id)
+    if idx is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Post with id {id} not found")
+
+    updated = post.model_dump()            # Pydantic v2
+    updated["id"] = id                     # preserve id
+    my_posts[idx] = updated
+    return updated
