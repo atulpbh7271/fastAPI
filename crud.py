@@ -1,7 +1,6 @@
 from typing import Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,status
 from pydantic import BaseModel
-
 from random import randrange
 
 app = FastAPI()
@@ -23,7 +22,7 @@ def get_posts():
     return {"data": my_posts}
 
 
-@app.post("/posts")
+@app.post("/posts",status_code=status.HTTP_201_CREATED)
 def create_posts(post:Post):
     # dict() on a Pydantic model is deprecated in Pydantic v2
     #Pydantic v1	Pydantic v2
@@ -43,3 +42,4 @@ def get_pots(id:int):
         # return 404 if not found
         raise HTTPException(status_code=404, detail=f"Post with id {id} not found")
     return {"data": post}
+
